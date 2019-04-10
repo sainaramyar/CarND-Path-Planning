@@ -1,0 +1,31 @@
+
+1- Introduction
+
+The goal of this project is to design a path planner that generates smooth and safe paths for the ego vehicle, on a 3-lane road with traffic.
+
+2- Basics 
+
+To keep the car in the road boundaries more easily, the coordinates are converted into Frenet coordinates using the car coordinates and map waypoints. 
+
+In order to generate a smooth path, splines are used. For this purpose, multiple points with relatively large distance of 30 m are determined, and the gap between these points is interpolated. The advantage of splines is that since it is a piecewise function of polynomials, it is guaranteed to go through all the points. Also, for a smoother path, the remaining points from the previous path are used.
+
+For maintaining the constraints on the velocity, acceleration and the jerk, the following parameters are used. The reference velocity is chosen 49.5 which is just below the speed limit. Also, the velocity is increased or decreased with the increment of 0.224, to prevent violating the acceleration and jerk constraints.
+
+3- Behavior Planning
+The position and speed of other vehicles are obtained through the sensor fusion module. This data is used for collision avoidance of the ego vehicle. When another vehicle is sensed in front of the ego-vehicle, the path planner decides between lane keeping or lane change based on the surrounding environment.
+
+To alternate between different lanes on the road, a state machine is developed which decides between the right/left lane change and lane keeping according to each state's cost function. 
+
+The cost function is designed based on the existence of front and rear cars on each lane, in addition to the distance to the center lane. In other words, when the ego-vehicle is close to its front vehicle, the option of lane change is investigated. If the adjacent lanes have fewer vehicles and are closer to the center lane, they are chosen for the lane change. Otherwise, the reference velocity is decreased to avoid a collision.
+
+In this cost function, the highest weight is for existence of vehicles in the front and rear of the target lane respectively, since they are associated with the safety of the vehicle, and a lower weight is given to closeness to the center lane since it is related to the comfort.
+
+
+4- Simulation Results
+
+This path planner is implemented in C++ and tested on the Udacity Term 3 simulator, and the results show that the path planner is able to generate trajectories which are consistent with all the constraints. In addition, when the ego vehicle is behind a slower car it smoothly changes the lane if possible and otherwise decelerates.
+
+This path planner can be improved by adding the following features:
+ - Implementing jerk-minimizing trajectory generation for smoother paths
+ - Adding a speed term to the cost function, so the lane with faster vehicles has the priority for lane change
+ - Modifying the collision avoidance weights in the cost function based on their distance to the surrounding vehicle, so a further target vehicle increases the priority of the lane for lane change.
